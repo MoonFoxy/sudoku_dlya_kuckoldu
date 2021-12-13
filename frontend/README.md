@@ -1,4 +1,4 @@
-# frontend
+# Sudoku Frontend
 
 ## Project setup
 ```
@@ -13,6 +13,11 @@ yarn run serve
 ### Compiles and minifies for production
 ```
 yarn run build
+```
+
+### Compiles and minifies for production (Includes modern and old versions)
+```
+yarn run build:modern
 ```
 
 ### Run your tests

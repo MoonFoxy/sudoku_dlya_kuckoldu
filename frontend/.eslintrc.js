@@ -1,20 +1,29 @@
 module.exports = {
   root: true,
   env: {
-    browser: true,
-    es2021: true,
     node: true,
   },
-  extends: ['plugin:vue/vue3-recommended', '@vue/prettier', '@vue/typescript', 'prettier'],
-  parser: 'vue-eslint-parser',
+  extends: [
+    'plugin:vue/vue3-essential',
+    '@vue/airbnb',
+    '@vue/typescript/recommended',
+  ],
   parserOptions: {
-    ecmaVersion: 13,
-    parser: '@typescript-eslint/parser',
-    sourceType: 'module',
+    ecmaVersion: 2020,
   },
-  plugins: ['vue', '@typescript-eslint'],
   rules: {
-    'prettier/prettier': 'error',
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
   },
+  overrides: [
+    {
+      files: [
+        '**/__tests__/*.{j,t}s?(x)',
+        '**/tests/unit/**/*.spec.{j,t}s?(x)',
+      ],
+      env: {
+        jest: true,
+      },
+    },
+  ],
 };

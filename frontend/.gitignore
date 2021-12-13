@@ -1,12 +1,12 @@
 .DS_Store
-/node_modules/
-/dist/
+node_modules
+/dist
 
-/coverage/
 /tests/e2e/videos/
 /tests/e2e/screenshots/
 
-# Local env files
+
+# local env files
 .env.local
 .env.*.local
 
@@ -14,12 +14,14 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # Editor directories and files
-.idea/
-.vscode/
+.idea
+.vscode
+.vs
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw*
+*.sw?
