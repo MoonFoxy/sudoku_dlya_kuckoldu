@@ -78,7 +78,7 @@ class grid:
 			id_func = random.randrange(0,len(mix_func),1)
 			mix_func[id_func]()
 
-example = grid(5)
+example = grid()
 # example.show()
 # print()
 example.mix()
@@ -86,8 +86,7 @@ example.mix()
 flook = [[0 for j in range(example.n*example.n)] for i in range(example.n*example.n)]
 iterator = 0
 difficult = example.n ** 4 #Первоначально все элементы на месте
-						 #количество эементво в столе 
-
+							#количество эементво в столе 
 while iterator < example.n ** 4:
 	i,j = random.randrange(0, example.n*example.n ,1), random.randrange(0, example.n*example.n ,1) # Выбираем случайную ячейку
 	if flook[i][j] == 0:	#Если её не смотрели
