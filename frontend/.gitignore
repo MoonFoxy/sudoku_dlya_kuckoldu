@@ -21,6 +21,7 @@ pnpm-debug.log*
 .vscode
 *.suo
 *.ntvs*
+*.example*
 *.njsproj
 *.sln
 *.sw?
