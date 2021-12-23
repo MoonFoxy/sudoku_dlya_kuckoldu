@@ -4,7 +4,7 @@ module.exports = {
     node: true,
   },
   extends: [
-    'plugin:vue/vue3-essential',
+    'plugin:vue/essential',
     '@vue/airbnb',
     '@vue/typescript/recommended',
   ],
@@ -12,17 +12,24 @@ module.exports = {
     ecmaVersion: 2020,
   },
   rules: {
+    'max-len': 'warn',
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
   },
   overrides: [
+    {
+      files: '**/*.vue',
+      rules: {
+        'max-len': 'off',
+      },
+    },
     {
       files: [
         '**/__tests__/*.{j,t}s?(x)',
         '**/tests/unit/**/*.spec.{j,t}s?(x)',
       ],
       env: {
-        jest: true,
+        mocha: true,
       },
     },
   ],
