@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="text-center p-0 m-0 container-fluid">
     <Navbar/>
     <router-view/>
   </div>
@@ -10,12 +10,11 @@ import { Vue, Component } from 'vue-property-decorator';
 import Navbar from '@/components/Navbar.vue';
 
 @Component({
-  components: { Navbar },
+  name: 'App',
+  components: {
+    Navbar,
+  },
 })
 export default class App extends Vue {
 }
 </script>
-
-<style lang="sass">
-
-</style>

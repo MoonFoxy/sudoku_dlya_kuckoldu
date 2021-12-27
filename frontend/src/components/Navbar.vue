@@ -1,29 +1,62 @@
 <template>
-<div id="nav">
-  <b-navbar variant="dark" type="dark" toggleable="sm">
-    <b-navbar-brand href="#">Sudoku</b-navbar-brand>
+  <b-navbar toggleable="lg" variant="faded" type="light">
+    <router-link to="/">
+      <b-navbar-brand>
+        <img
+          src="/img/bts_leader.png"
+          alt="Sudoku"
+          width="40px"
+          height="auto"
+          class="d-inline-block align-top"
+        />
+        Sudoku
+      </b-navbar-brand>
+    </router-link>
 
-    <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+    <b-navbar-toggle target="nav-collapse">
+      <!-- <template #default="{ expanded }">
+        <b-icon v-if="expanded" icon="chevron-bar-up"></b-icon>
+        <b-icon v-else icon="chevron-bar-down"></b-icon>
+      </template> -->
+    </b-navbar-toggle>
 
     <b-collapse id="nav-collapse" is-nav>
-      <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
-        <router-link to="/" tag="b-nav-item" right>Играть</router-link>
-        <router-link to="/about" tag="b-nav-item" right>Об игре</router-link>
-        <router-link to="/howtoplay" tag="b-nav-item" right>Как играть?</router-link>
+        <router-link
+        to="/"
+        v-slot="{ navigate }"
+        custom>
+          <b-nav-item @click="navigate">Играть</b-nav-item>
+        </router-link>
+        <router-link
+        to="/about"
+        v-slot="{ navigate }"
+        custom>
+          <b-nav-item @click="navigate">Об игре</b-nav-item>
+        </router-link>
+        <router-link
+        to="/howtoplay"
+        v-slot="{ navigate }"
+        custom>
+          <b-nav-item @click="navigate">Как играть?</b-nav-item>
+        </router-link>
+        <b-nav-item
+          href="https://github.com/MoonFoxy"
+          rel="noopener"
+          target="_blank"
+        >
+          GitHub
+        </b-nav-item>
       </b-navbar-nav>
     </b-collapse>
   </b-navbar>
-  </div>
 </template>
 
 <script lang='ts'>
 import { Vue, Component } from 'vue-property-decorator';
 
-@Component
-export default class NavigationDrawer extends Vue {}
+@Component({
+  name: 'Navbar',
+})
+export default class Navbar extends Vue {}
 </script>
-
-<style scoped lang='sass'>
-
-</style>

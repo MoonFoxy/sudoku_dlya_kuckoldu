@@ -1,28 +1,42 @@
 <template>
   <div class='home'>
-    <img src='@/assets/images/logo.png'/>
-    <h1>Welcome to vue-webpack-typescript!</h1>
-    <p>
-      For a ginterfacede how to get started with this project,<br/> check out the <a href='https://github.com/akoidan/vue-webpack-typescript'>documentation</a>
-    </p>
+    <div class="jumbotron m-0 p-0 jumbotron-fluid">
+      <h2 class="display-4">Sudoku</h2>
+      <div class="container">
+        <div class="row">
+          <div class="col">
+            <Grid/>
+          </div>
+          <div class="col">
+            <p class="lead">Да это</p>
+            <div class="row mb-4 no-gutters justify-content-center">
+              <img width="130px" height="auto" src="/img/simple.jpg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="lead m-0 p-0">
+        tsukiko.tech
+      </p>
+    </div>
   </div>
 </template>
 
 <script lang='ts'>
-import { Vue } from 'vue-property-decorator';
+import { Vue, Component } from 'vue-property-decorator';
+import Grid from '@/components/Grid.vue';
 
-export default class Home extends Vue {}
+@Component({
+  name: 'Home',
+  components: {
+    Grid,
+  },
+})
+export default class Home extends Vue {
+  created(): void {
+    this.$store.dispatch({ type: 'INIT_SUDOKU' });
+  }
+}
 </script>
-
-<style lang='sass'>
-  .home-page
-    margin: auto
-    text-align: center
-
-  img
-    height: 100px
-
-  p
-    margin-top: 16px
-
-</style>

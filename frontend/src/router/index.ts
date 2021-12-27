@@ -12,12 +12,14 @@ const routes: Array<RouteConfig> = [
     path: '/',
   },
   {
+    // Dynamic import of component and dependency
     component: () => import(/* webpackChunkName: "about" */ '@/pages/About.vue'),
     name: 'about',
     path: '/about',
   },
   {
-    component: () => import(/* webpackChunkName: "about" */ '@/pages/HowToPlay.vue'),
+    // Dynamic import of component and dependency
+    component: () => import(/* webpackChunkName: "how-to-play" */ '@/pages/HowToPlay.vue'),
     name: 'how-to-play',
     path: '/howtoplay',
   },
@@ -28,10 +30,8 @@ const routes: Array<RouteConfig> = [
   },
 ];
 
-const router = new VueRouter({
+export default new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes,
 });
-
-export default router;
