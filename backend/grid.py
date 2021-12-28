@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import random
-
+#создание первоначальной матрицы
 from decorators import requires_grid
 
 class Grid:

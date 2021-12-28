@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-A simple backtracking Sudoku generator
-"""
+# Модификация изначальных матриц
 
 import math
 import random
