@@ -1,25 +1,37 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import Home from '../views/Home.vue';
+import Vue from 'vue';
+import VueRouter, { RouteConfig } from 'vue-router';
+import Home from '@/pages/Home.vue';
+import NotFound from '@/pages/NotFound.vue';
 
-const routes: Array<RouteRecordRaw> = [
+Vue.use(VueRouter);
+
+const routes: Array<RouteConfig> = [
   {
-    path: '/',
-    name: 'Home',
     component: Home,
+    name: 'home',
+    path: '/',
   },
   {
+    // Dynamic import of component and dependency
+    component: () => import(/* webpackChunkName: "about" */ '@/pages/About.vue'),
+    name: 'about',
     path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
+  },
+  {
+    // Dynamic import of component and dependency
+    component: () => import(/* webpackChunkName: "how-to-play" */ '@/pages/HowToPlay.vue'),
+    name: 'how-to-play',
+    path: '/howtoplay',
+  },
+  {
+    component: NotFound,
+    name: 'not-found',
+    path: '/:catchAll(.*)',
   },
 ];
 
-const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+export default new VueRouter({
+  mode: 'history',
+  base: process.env.BASE_URL,
   routes,
 });
-
-export default router;

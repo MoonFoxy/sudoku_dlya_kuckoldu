@@ -1,6 +1,15 @@
 # sudoku_dlya_kuckoldu
 
-Flask + MongoDB + Vue.js
+FrontEnd:
+TypeScript,
+Vue.js,
+VueX,
+Vue-CLI,
+BootStrap
+
+BackEnd:
+Flask,
+MongoDB
 
 Классный
 Универсальный
