@@ -1,36 +1,8 @@
 #!/usr/bin/env python3
-
-# Author: Ali Assaf <ali.assaf.mail@gmail.com>
-# Copyright: (C) 2010 Ali Assaf
-# License: GNU General Public License <http://www.gnu.org/licenses/>
-
 from itertools import product
 
 def solve_sudoku(size, grid):
-	""" An efficient Sudoku solver using Algorithm X.
 
-	>>> grid = [
-	...     [5, 3, 0, 0, 7, 0, 0, 0, 0],
-	...     [6, 0, 0, 1, 9, 5, 0, 0, 0],
-	...     [0, 9, 8, 0, 0, 0, 0, 6, 0],
-	...     [8, 0, 0, 0, 6, 0, 0, 0, 3],
-	...     [4, 0, 0, 8, 0, 3, 0, 0, 1],
-	...     [7, 0, 0, 0, 2, 0, 0, 0, 6],
-	...     [0, 6, 0, 0, 0, 0, 2, 8, 0],
-	...     [0, 0, 0, 4, 1, 9, 0, 0, 5],
-	...     [0, 0, 0, 0, 8, 0, 0, 7, 9]]
-	>>> for solution in solve_sudoku((3, 3), grid):
-	...     print(*solution, sep='\\n')
-	[5, 3, 4, 6, 7, 8, 9, 1, 2]
-	[6, 7, 2, 1, 9, 5, 3, 4, 8]
-	[1, 9, 8, 3, 4, 2, 5, 6, 7]
-	[8, 5, 9, 7, 6, 1, 4, 2, 3]
-	[4, 2, 6, 8, 5, 3, 7, 9, 1]
-	[7, 1, 3, 9, 2, 4, 8, 5, 6]
-	[9, 6, 1, 5, 3, 7, 2, 8, 4]
-	[2, 8, 7, 4, 1, 9, 6, 3, 5]
-	[3, 4, 5, 2, 8, 6, 1, 7, 9]
-	"""
 	R, C = size
 	N = R * C
 	X = ([("rc", rc) for rc in product(range(N), range(N))] +

@@ -1,20 +1,37 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+from flask import Flask, abort, request
+from flask_restful import Api
+import random
 
-# configuration
-DEBUG = False
+from sudoku import Sudoku
+from solver import solve_sudoku
 
-# instantiate the app
 app = Flask(__name__)
-app.config.from_object(__name__)
+api = Api(app)
 
-# enable CORS
-CORS(app)
+@app.route('/api/generate', methods=['GET'])
+def matrix_gen():
+    data = request.get_json()
+    try:		 
+        matrx = Sudoku(data.size, data.dif)
+    except ValueError:
+        abort(404)
+    return matrx.masked_grid, 200
+    # response = requests.post(url, json={"user": user,"pass": password})
 
-# sanity check route
-@app.route('/ping', methods=['GET'])
-def ping_pong():
-	return jsonify('ping!')
+@app.route('/api/numsol', methods=['GET'])
+def check_sol():
+    pop = 0
+    data = request.get_json()
+    try:
+        for solution in solve_sudoku((data.size, data.size), data.mat):
+            pop += 1
+            if pop > 100:
+                break
+    except:
+        abort(404)
+    return pop, 200
+    # response = requests.post(url, json={"user": user,"pass": password})
 
 if __name__ == '__main__':
-	app.run()
+  app.run(debug=True)
+
