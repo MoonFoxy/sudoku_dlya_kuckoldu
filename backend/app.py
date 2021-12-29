@@ -1,37 +1,40 @@
-from flask import Flask, abort, request
-from flask_restful import Api
-import random
+from flask import Flask, jsonify, request
 
 from sudoku import Sudoku
 from solver import solve_sudoku
 
 app = Flask(__name__)
-api = Api(app)
 
 @app.route('/api/generate', methods=['GET'])
-def matrix_gen():
+def sudoku_generation():
     data = request.get_json()
-    try:		 
-        matrx = Sudoku(data.size, data.dif)
+    if data.get('size') not in range(2, 6) or data.get('dif') not in range(0, 6):
+        return jsonify({'error': 404}), 404
+
+    try:
+        matrix = Sudoku(data.get('size', 3), data.get('dif', 4))
     except ValueError:
-        abort(404)
-    return matrx.masked_grid, 200
-    # response = requests.post(url, json={"user": user,"pass": password})
+        return jsonify({'error': 404}), 404
+
+    return jsonify({'matrix': matrix.masked_grid}), 200
 
 @app.route('/api/numsol', methods=['GET'])
-def check_sol():
-    pop = 0
+def check_solutions():
     data = request.get_json()
+    solutions = 0
+    if data.get('size') not in range(2, 6):
+        return jsonify({'error': 404}), 404
+
     try:
-        for solution in solve_sudoku((data.size, data.size), data.mat):
-            pop += 1
-            if pop > 100:
+        for _ in solve_sudoku((data.get('size'), data.get('size')), data.get('matrix')):
+            solutions += 1
+            if solutions > 100:
                 break
     except:
-        abort(404)
-    return pop, 200
-    # response = requests.post(url, json={"user": user,"pass": password})
+        return jsonify({'error': 404}), 404
+
+    return jsonify({'sol': solutions}), 200
 
 if __name__ == '__main__':
-  app.run(debug=True)
+  app.run(debug = True)
 

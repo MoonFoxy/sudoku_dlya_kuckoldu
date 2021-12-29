@@ -1,15 +1,15 @@
 # domen.moe/api/numsol
 ```json
-"send":
+"SEND":
 {
-    "matrix": [[]],
-    "size":
+    "size": ( 2 - 5 ),
+    "matrix": [[...]]
 }
 
-"back":
+"GET":
 {
-    "num": 101, //0-100, +100 (больше 100 реш)
-    "error?": ""
+    "sol": ( 0 - 101 ), // 0 - 100, +100 (больше 100 решений)
+    "error?": "Error msg"
 }
 ```
 
@@ -17,14 +17,13 @@
 ```json
 "send":
 {
-    "id": 123123123,
-    "difficulty": 1 - 5, 
-    "size": 2 - 5,
+    "diff": ( 1 - 5 ), 
+    "size": ( 2 - 5 )
 },
 
 "back":
 {
-    "matrix": [[]],
-    "error?": ""
+    "matrix": [[...]],
+    "error?": "Error msg"
 }
 ```
