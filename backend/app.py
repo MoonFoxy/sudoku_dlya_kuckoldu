@@ -8,7 +8,7 @@ from solver import solve_sudoku
 app = Flask(__name__)
 cors = CORS(app)
 
-@app.route('/api/generate', methods=['POST'])
+@app.route('/sudoku/generate', methods=['POST'])
 def sudoku_generation():
     data = request.get_json()
     size, dif = data.get('size'), data.get('dif')
@@ -33,7 +33,7 @@ def sudoku_generation():
 
     return jsonify({ 'error': 'Invalid input' }), 404
 
-@app.route('/api/numsol', methods=['POST'])
+@app.route('/sudoku/numsol', methods=['POST'])
 def check_solutions():
     data = request.get_json()
     size, matrix = data.get('size'), data.get('matrix')
