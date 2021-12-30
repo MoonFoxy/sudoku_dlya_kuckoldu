@@ -41,7 +41,7 @@
           <b-nav-item @click="navigate">Как играть?</b-nav-item>
         </router-link>
         <b-nav-item
-          href="https://github.com/MoonFoxy"
+          href="https://github.com/MoonFoxy/sudoku_dlya_kuckoldu"
           rel="noopener"
           target="_blank"
         >

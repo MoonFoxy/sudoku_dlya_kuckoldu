@@ -13,14 +13,12 @@ module.exports = {
     },
   },
   devServer: {
-    proxy: 'http://localhost:5000/',
-    historyApiFallback: true,
-    /*
     proxy: {
-      '/api*': {
-        // Forward frontend dev server request for /api to flask dev server
-        target: 'http://backend:5000/'
-      }
-    } */
+      '^/api': {
+        target: 'http://127.0.0.1:5000/',
+        changeOrigin: true,
+      },
+    },
+    historyApiFallback: true,
   },
 };

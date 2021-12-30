@@ -1,39 +1,35 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// eslint-disable-next-line import/extensions
-import sudokuModule from './sudoku.js'; // TODO: Delete this shit
+import axios from 'axios';
+import _ from 'lodash';
 
 Vue.use(Vuex);
 
 /**
  * DIFFICULTIES:
  *    CUSTOM: 0,
- *    MIN: 1,
- *    EASY: 2,
- *    MEDIUM: 3,
- *    HARD: 4,
- *    EXPERT: 5,
- *    INSANE: 6,
- *    GOOD_LUCK: 7,
+ *    EASY: 1,
+ *    MEDIUM: 2,
+ *    HARD: 3,
+ *    EXPERT: 4,
+ *    INSANE: 5,
+ *    GOOD_LUCK: 6,
  */
 interface Cell {
   selected: boolean;
   locked: boolean;
   error: boolean;
-  candidates?: number[];
-  solution?: number;
-  value: number | '';
+  value: number;
 }
 
 interface State {
   size: 2 | 3 | 4 | 5;
-  difficulty: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  difficulty: 1 | 2 | 3 | 4 | 5 | 6;
   grid: Cell[][];
-  gridString: string | null;
+  gridString: string;
+  solutionsCount: number;
   selected: { x: number, y: number } | null;
+  input: number | null;
   gameWon: boolean;
 }
 
@@ -41,56 +37,152 @@ export default new Vuex.Store<State>({
   state: {
     size: 3,
     difficulty: 4,
-    grid: Array(9).map(() => Array(9).fill({
+    grid: Array(9).fill(Array(9).fill({
       selected: false,
       locked: true,
       error: false,
       value: 0,
     } as Cell)),
-    gridString: null,
+    gridString: '',
+    solutionsCount: 0,
     selected: null,
+    input: null,
     gameWon: false,
   },
 
   mutations: {
+    SET_INPUT(state, { value }: { value: number }) {
+      let changedValue = value;
+      if (state.size ** 2 >= 10 && state.input) {
+        const formedValue: number = parseInt(`${state.input}${changedValue}`, 10);
+        if (state.size ** 2 >= formedValue) {
+          changedValue = formedValue;
+        }
+      }
+
+      state.input = changedValue;
+    },
+
     NEW_GAME(state) {
       state.gameWon = false;
+    },
+
+    GAME_WON(state) {
+      state.gameWon = true;
+    },
+
+    CHECK_GAME(state) {
+      let won = true;
+      for (let y = 0; y < state.grid.length && won; y += 1) {
+        for (let x = 0; x < state.grid[y].length && won; x += 1) {
+          if (state.grid[y][x].error || state.grid[y][x].value === 0) won = false;
+        }
+      }
+
+      if (won) state.gameWon = true;
     },
 
     SET_SUDOKU_DIFFICULTY(state, { difficulty }: { difficulty: State['difficulty'] }) {
       state.difficulty = difficulty;
     },
 
-    SET_GRID_ROW(state, { y, row }: { y: number, row: Cell[] }) {
-      state.grid[y] = row;
+    SET_GRID_SIZE(state, { size }: { size: State['size'] }) {
+      const size2 = size ** 2;
+      state.grid = Array(size2).fill(Array(size2).fill({
+        selected: false,
+        locked: true,
+        error: false,
+        value: 0,
+      } as Cell));
+      state.size = size;
     },
 
-    SET_CELL_VALUE(state, { value }: { value: number }) {
-      if (!state.selected || !(value >= 1 && value <= state.size ** 2)) return;
-      const row = state.grid[state.selected.y];
-      row[state.selected.x].value = value;
+    SET_GRID(state, { matrix, gridString }: { matrix: number[][], gridString: string }) {
+      state.gridString = gridString;
+      for (let y = 0; y < matrix.length; y += 1) {
+        const row: Cell[] = [];
+        for (let x = 0; x < matrix[y].length; x += 1) {
+          const newCell = {
+            selected: false,
+            locked: matrix[y][x] !== 0,
+            error: false,
+            value: matrix[y][x],
+          };
+          row.push(newCell);
+        }
+        Vue.set(state.grid, y, row);
+      }
+    },
+
+    SET_SOLUTIONS_COUNT(state, { count }: { count: number }) {
+      state.solutionsCount = count;
+    },
+
+    SET_CELL_VALUE(state) {
+      const value = state.input;
+      if (!value) return;
+
+      const size2 = state.size ** 2;
+      if (!state.selected || !(value >= 1 && value <= size2)) return;
+
+      state.grid[state.selected.y][state.selected.x].value = value;
+
+      const nonErrorGrid = [...state.grid];
+      for (let y = 0; y < size2; y += 1) {
+        for (let x = 0; x < size2; x += 1) {
+          nonErrorGrid[y][x].error = false;
+        }
+      }
 
       /**
        * Error checking & highlighting
        */
-      if (value !== row[state.selected.x].solution) {
-        row[state.selected.x].error = true;
-      } else {
-        row[state.selected.x].error = false;
-      }
-      console.log(row[state.selected.x].solution);
-      Vue.set(state.grid, state.selected.y, row);
+      for (let i = 0; i < size2; i += 1) {
+        // Check the lines
+        const row = _.filter(_.map(nonErrorGrid[i], (el) => el.value),
+          (val, j, arr) => _.includes(arr, val, j + 1));
+        if (row.length !== 0) {
+          for (let x = 0; x < size2; x += 1) {
+            if (row.includes(nonErrorGrid[i][x].value) && nonErrorGrid[i][x].value !== 0) {
+              nonErrorGrid[i][x].error = true;
+            }
+          }
+        }
 
-      /**
-       * Check if the game is won
-       */
-      let won = true;
-      for (let y = 0; y < state.grid.length; y += 1) {
-        for (let x = 0; x < state.grid[y].length; x += 1) {
-          if (state.grid[y][x].value !== state.grid[y][x].solution) won = false;
+        // Check the column
+        const column = _.filter(_.map(_.map(nonErrorGrid, (el) => el[i]),
+          (el) => el.value), (val, j, arr) => _.includes(arr, val, j + 1));
+        if (column.length !== 0) {
+          for (let y = 0; y < size2; y += 1) {
+            if (row.includes(nonErrorGrid[y][i].value) && nonErrorGrid[y][i].value !== 0) {
+              nonErrorGrid[y][i].error = true;
+            }
+          }
+        }
+
+        // Check the square
+        const { size } = state;
+        let square: number[] = [];
+        const startX = size * Math.floor(i % size);
+        const startY = size * Math.floor(i / size);
+
+        for (let x = startX; x < startX + size; x += 1) {
+          for (let y = startY; y < startY + size; y += 1) {
+            square.push(nonErrorGrid[y][x].value);
+          }
+        }
+
+        square = _.filter(square, (val, j, arr) => _.includes(arr, val, j + 1));
+        if (square.length !== 0) {
+          for (let x = startX; x < startX + size; x += 1) {
+            for (let y = startY; y < startY + size; y += 1) {
+              if (square.includes(nonErrorGrid[y][x].value) && nonErrorGrid[y][x].value !== 0) {
+                nonErrorGrid[y][x].error = true;
+              }
+            }
+          }
         }
       }
-      if (won) state.gameWon = true;
     },
 
     SET_CELL_SELECTED(state, { x: posX, y: posY }: { x: number, y: number }) {
@@ -112,7 +204,7 @@ export default new Vuex.Store<State>({
   },
 
   actions: {
-    INIT_SUDOKU: async ({ commit }, { difficulty }: { difficulty?: State['difficulty'] | undefined }) => {
+    INIT_SUDOKU: async ({ commit }, { size, difficulty }: { size?: State['size'], difficulty?: State['difficulty'] }) => {
       commit({
         type: 'NEW_GAME',
       });
@@ -120,52 +212,78 @@ export default new Vuex.Store<State>({
       const gameDifficulty = difficulty ?? 4;
       commit({
         type: 'SET_SUDOKU_DIFFICULTY',
-        gameDifficulty,
+        difficulty: gameDifficulty,
       });
 
-      const gridString: State['gridString'] = sudokuModule.sudoku.generate(difficulty);
-      console.log(gridString);
+      const gameSize = size ?? 3;
+      commit({
+        type: 'SET_GRID_SIZE',
+        size,
+      });
 
-      const candidates = sudokuModule.sudoku.get_candidates(gridString);
-      const grid = sudokuModule.sudoku.board_string_to_grid(gridString);
+      let response: { data: { matrix: number[][], matrixString: string } } = {
+        data: {
+          matrix: [],
+          matrixString: '',
+        },
+      };
+      try {
+        response = await axios.post('/api/generate', {
+          size: gameSize,
+          dif: gameDifficulty,
+        });
+      } catch (error) {
+        console.error(error);
+      }
 
-      const solution = sudokuModule.sudoku.solve(gridString);
-      const solvedGrid = sudokuModule.sudoku.board_string_to_grid(solution);
+      const gridString: State['gridString'] = `${gameSize}${gameDifficulty}${response.data.matrixString}`;
+      console.log(gridString); // TODO: Save String in cache
 
       /**
-       * Change . to "", also store a ob instead of just numbers
+       * Change 0 to "", also store a ob instead of just numbers
        */
-      for (let y = 0; y < grid.length; y += 1) {
-        for (let x = 0; x < grid[y].length; x += 1) {
-          const newValue: Cell = {
-            selected: false,
-            locked: true,
-            error: false,
-            candidates: candidates[y][x],
-            solution: parseInt(solvedGrid[y][x], 10),
-            value: parseInt(grid[y][x], 10),
-          };
 
-          if (grid[y][x] === '.') {
-            newValue.value = '';
-            newValue.locked = false;
-          }
-
-          grid[y][x] = newValue;
-        }
-        commit({
-          type: 'SET_GRID_ROW',
-          y,
-          row: grid[y],
-        });
-      }
+      commit({
+        type: 'SET_GRID',
+        matrix: response.data.matrix,
+        gridString,
+      });
     },
 
-    // No need
+    GET_SOLUTIONS_COUNT: async ({ commit }, { size, grid }: { size: State['size'], grid: Cell[][] }) => {
+      let response: { data: { sol: number } } = {
+        data: {
+          sol: 0,
+        },
+      };
+      let solutions = -1;
+      const matrix = _.map(grid, (row) => _.map(row, (el) => el.value));
+      try {
+        response = await axios.post('/api/numsol', {
+          size,
+          matrix,
+        });
+        solutions = response.data.sol;
+      } catch (error) {
+        console.error(error);
+      }
+
+      commit({
+        type: 'SET_SOLUTIONS_COUNT',
+        count: solutions,
+      });
+    },
+
     SET_CELL_VALUE: async ({ commit }, { value }: { value: number }) => {
       commit({
-        type: 'SET_CELL_VALUE',
+        type: 'SET_INPUT',
         value,
+      });
+      commit({
+        type: 'SET_CELL_VALUE',
+      });
+      commit({
+        type: 'CHECK_GAME',
       });
     },
 
