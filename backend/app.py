@@ -1,12 +1,12 @@
 from types import NoneType
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+# from flask_cors import CORS
 
 from sudoku import Sudoku
 from solver import solve_sudoku
 
 app = Flask(__name__)
-cors = CORS(app)
+# cors = CORS(app)
 
 @app.route('/sudoku/generate', methods=['POST'])
 def sudoku_generation():
