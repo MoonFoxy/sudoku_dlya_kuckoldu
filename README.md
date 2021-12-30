@@ -9,7 +9,6 @@ BootStrap
 
 BackEnd:
 Flask,
-MongoDB
 
 Классный
 Универсальный
