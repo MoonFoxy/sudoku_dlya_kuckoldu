@@ -1,14 +1,16 @@
 from types import NoneType
 from flask import Flask, jsonify, request
-# from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 from sudoku import Sudoku
 from solver import solve_sudoku
 
 app = Flask(__name__)
-# cors = CORS(app)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/sudoku/generate', methods=['POST'])
+@cross_origin()
 def sudoku_generation():
     data = request.get_json()
     size, dif = data.get('size'), data.get('dif')
@@ -34,6 +36,7 @@ def sudoku_generation():
     return jsonify({ 'error': 'Invalid input' }), 404
 
 @app.route('/sudoku/numsol', methods=['POST'])
+@cross_origin()
 def check_solutions():
     data = request.get_json()
     size, matrix = data.get('size'), data.get('matrix')
