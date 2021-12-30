@@ -1,0 +1,1 @@
+backend: gunicorn --chdir ./backend run:app --log-file=-

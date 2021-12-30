@@ -1,1 +1,0 @@
-backend: gunicorn run:app --log-file=-
