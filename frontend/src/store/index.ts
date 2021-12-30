@@ -228,7 +228,7 @@ export default new Vuex.Store<State>({
         },
       };
       try {
-        response = await axios.post('/api/generate', {
+        response = await axios.post('/sudoku/generate', {
           size: gameSize,
           dif: gameDifficulty,
         });
@@ -259,7 +259,7 @@ export default new Vuex.Store<State>({
       let solutions = -1;
       const matrix = _.map(grid, (row) => _.map(row, (el) => el.value));
       try {
-        response = await axios.post('/api/numsol', {
+        response = await axios.post('/sudoku/numsol', {
           size,
           matrix,
         });
