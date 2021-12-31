@@ -26,7 +26,7 @@ interface Cell {
 
 interface State {
   size: 2 | 3 | 4 | 5;
-  difficulty: 1 | 2 | 3 | 4 | 5 | 6;
+  difficulty: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   grid: Cell[][];
   gridString: string;
   solutionsCount: number;
@@ -41,7 +41,7 @@ export default new Vuex.Store<State>({
     difficulty: 4,
     grid: Array(9).fill(Array(9).fill({
       selected: false,
-      locked: true,
+      locked: false,
       error: false,
       value: 0,
     } as Cell)),
@@ -92,11 +92,15 @@ export default new Vuex.Store<State>({
       const size2 = size ** 2;
       state.grid = Array(size2).fill(Array(size2).fill({
         selected: false,
-        locked: true,
+        locked: false,
         error: false,
         value: 0,
       } as Cell));
       state.size = size;
+    },
+
+    SET_GRID_STRING(state, { gridString }: { gridString: string }) {
+      state.gridString = gridString;
     },
 
     SET_GRID(state, { matrix, gridString }: { matrix: number[][], gridString: string }) {
@@ -223,33 +227,37 @@ export default new Vuex.Store<State>({
         size,
       });
 
-      let response: { data: { matrix: number[][], matrixString: string } } = {
-        data: {
-          matrix: [],
-          matrixString: '',
-        },
-      };
-      try {
-        response = await axios.post(`${URL}/sudoku/generate`, {
-          size: gameSize,
-          dif: gameDifficulty,
+      let gridString: State['gridString'];
+      if (gameDifficulty !== 0) {
+        let response: { data: { matrix: number[][], matrixString: string } } = {
+          data: {
+            matrix: [],
+            matrixString: '',
+          },
+        };
+        try {
+          response = await axios.post(`${URL}/sudoku/generate`, {
+            size: gameSize,
+            dif: gameDifficulty - 1,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+
+        gridString = `${gameSize}${gameDifficulty}${response.data.matrixString}`;
+        commit({
+          type: 'SET_GRID',
+          matrix: response.data.matrix,
+          gridString,
         });
-      } catch (error) {
-        console.error(error);
+      } else {
+        gridString = `${gameSize}${gameDifficulty}${0}`;
+        commit({
+          type: 'SET_GRID_STRING',
+          gridString,
+        });
       }
-
-      const gridString: State['gridString'] = `${gameSize}${gameDifficulty}${response.data.matrixString}`;
       console.log(gridString); // TODO: Save String in cache
-
-      /**
-       * Change 0 to "", also store a ob instead of just numbers
-       */
-
-      commit({
-        type: 'SET_GRID',
-        matrix: response.data.matrix,
-        gridString,
-      });
     },
 
     GET_SOLUTIONS_COUNT: async ({ commit }, { size, grid }: { size: State['size'], grid: Cell[][] }) => {

@@ -62,12 +62,13 @@ export default class Home extends Vue {
   ];
 
   public optionsDifficulty: { value: number, text: string }[] = [
-    { value: 0, text: 'EASY' },
-    { value: 1, text: 'MEDIUM' },
-    { value: 2, text: 'HARD' },
-    { value: 3, text: 'EXPERT' },
-    { value: 4, text: 'INSANE' },
-    { value: 5, text: 'GOOD_LUCK' },
+    { value: 0, text: 'CUSTOM' },
+    { value: 1, text: 'EASY' },
+    { value: 2, text: 'MEDIUM' },
+    { value: 3, text: 'HARD' },
+    { value: 4, text: 'EXPERT' },
+    { value: 5, text: 'INSANE' },
+    { value: 6, text: 'GOOD_LUCK' },
   ];
 
   checkSolutionsCount(): void {
