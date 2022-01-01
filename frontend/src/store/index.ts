@@ -28,14 +28,13 @@ interface State {
   size: 2 | 3 | 4 | 5;
   difficulty: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   grid: Cell[][];
-  gridString: string;
   solutionsCount: number;
   selected: { x: number, y: number } | null;
   input: number | null;
   gameWon: boolean;
 }
 
-export default new Vuex.Store<State>({
+const store = new Vuex.Store<State>({
   state: {
     size: 3,
     difficulty: 4,
@@ -45,7 +44,6 @@ export default new Vuex.Store<State>({
       error: false,
       value: 0,
     } as Cell)),
-    gridString: '',
     solutionsCount: 0,
     selected: null,
     input: null,
@@ -84,15 +82,6 @@ export default new Vuex.Store<State>({
       state.difficulty = difficulty;
     },
 
-    SET_GRID_STRING(
-      state,
-      { size, difficulty, matrix }: { size: State['size'], difficulty: State['difficulty'], matrix: number[][] },
-    ) {
-      state.gridString = `${size}${difficulty}|${_.map(matrix, (row) => `${row}`)}|${_.map(matrix, (row) => _.map(row, (el) => el !== 0))}`;
-    },
-
-    // PARSE_GRID_STRING(state) { },
-
     SET_GRID_SIZE(state, { size }: { size: State['size'] }) {
       const size2 = size ** 2;
       state.grid = Array(size2).fill(Array(size2).fill({
@@ -104,7 +93,7 @@ export default new Vuex.Store<State>({
       state.size = size;
     },
 
-    SET_GRID(
+    SET_GRID_NUMBER(
       state,
       { matrix, custom }: { matrix: number[][], custom?: boolean },
     ) {
@@ -120,6 +109,12 @@ export default new Vuex.Store<State>({
           row.push(newCell);
         }
         Vue.set(state.grid, y, row);
+      }
+    },
+
+    SET_GRID_CELL(state, { grid }: { grid: Cell[][] }) {
+      for (let y = 0; y < grid.length; y += 1) {
+        Vue.set(state.grid, y, grid[y]);
       }
     },
 
@@ -246,7 +241,9 @@ export default new Vuex.Store<State>({
       }
     },
 
-    INIT_SUDOKU: async ({ commit, dispatch }, { size, difficulty, vm }: { size?: State['size'], difficulty?: State['difficulty'], vm: Vue }) => {
+    INIT_SUDOKU: async ({ commit, dispatch }, {
+      size, difficulty, vm, grid,
+    }: { size?: State['size'], difficulty?: State['difficulty'], grid?: State['grid'], vm: Vue }) => {
       commit({
         type: 'NEW_GAME',
       });
@@ -263,7 +260,12 @@ export default new Vuex.Store<State>({
         size: gameSize,
       });
 
-      if (gameDifficulty !== 0) {
+      if (grid) {
+        commit({
+          type: 'SET_GRID_CELL',
+          grid,
+        });
+      } else if (gameDifficulty !== 0) {
         await axios.post(`${backendURL}/sudoku/generate`, {
           size: gameSize,
           dif: gameDifficulty - 1,
@@ -274,13 +276,7 @@ export default new Vuex.Store<State>({
             },
           }) => {
             commit({
-              type: 'SET_GRID',
-              matrix: res.data.matrix,
-            });
-            commit({
-              type: 'SET_GRID_STRING',
-              size: gameSize,
-              difficulty: gameDifficulty,
+              type: 'SET_GRID_NUMBER',
               matrix: res.data.matrix,
             });
           })
@@ -293,21 +289,20 @@ export default new Vuex.Store<State>({
               });
               console.error(error);
               dispatch({
-                type: 'INIT_COSTOM_SUDOKU',
+                type: 'INIT_CUSTOM_SUDOKU',
                 size: gameSize,
               });
             }
           });
       } else {
         dispatch({
-          type: 'INIT_COSTOM_SUDOKU',
+          type: 'INIT_CUSTOM_SUDOKU',
           size: gameSize,
         });
       }
-      // TODO: Save String in cache
     },
 
-    INIT_COSTOM_SUDOKU: async ({ commit }, { size }: { size: State['size'] }) => {
+    INIT_CUSTOM_SUDOKU: async ({ commit }, { size }: { size: State['size'] }) => {
       commit({
         type: 'SET_SUDOKU_DIFFICULTY',
         difficulty: 0,
@@ -315,15 +310,9 @@ export default new Vuex.Store<State>({
 
       const matrix: number[][] = Array(size ** 2).fill(Array(size ** 2).fill(0));
       commit({
-        type: 'SET_GRID',
+        type: 'SET_GRID_NUMBER',
         matrix,
         custom: true,
-      });
-      commit({
-        type: 'SET_GRID_STRING',
-        size,
-        difficulty: 0,
-        matrix,
       });
     },
 
@@ -371,3 +360,15 @@ export default new Vuex.Store<State>({
     },
   },
 });
+
+store.subscribe((_mutation, state: State) => {
+  localStorage.setItem('grid', JSON.stringify(state.grid));
+  localStorage.setItem('gridSettings', JSON.stringify(
+    {
+      size: state.size,
+      difficulty: state.difficulty,
+    },
+  ));
+});
+
+export default store;
