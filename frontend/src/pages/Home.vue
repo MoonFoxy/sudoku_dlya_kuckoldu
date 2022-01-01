@@ -4,13 +4,23 @@
       <h2 class="display-4">Sudoku</h2>
       <div class="container">
         <div class="row">
-          <b-form-select v-model="selectedSize" :options="optionsSize" size="lg" class="col mt-3"></b-form-select>
+          <div class="col">
+            <p class="lead">
+              Размер поля:
+            </p>
+            <b-form-select v-model="selectedSize" :options="optionsSize" size="lg" class="col mt-3"></b-form-select>
+          </div>
           &nbsp;&nbsp;&nbsp;&nbsp;
           <b-button v-on:click="checkSolutionsCount(selectedSize, grid)" block variant="light" class="col mt-3">{{
             solutionsCount ? (solutionsCount > 100 ? 'Более 100 решений' : (0 >= solutionsCount ? 'Не имеет решений' : `${solutionsCount} решений`)) : 'Узнать кол-во решений'
             }}</b-button>
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <b-form-select v-model="selectedDifficulty" :options="optionsDifficulty" size="lg" class="col mt-3"></b-form-select>
+          <div class="col">
+            <p class="lead">
+              Сложность:
+            </p>
+            <b-form-select v-model="selectedDifficulty" :options="optionsDifficulty" size="lg" class="col mt-3"></b-form-select>
+          </div>
         </div>
       </div>
       <br>
@@ -58,13 +68,9 @@ interface Cell {
   ]),
 })
 export default class Home extends Vue {
-  private readonly size!: number;
+  public selectedSize = 3;
 
-  public selectedSize = this.size ?? 3;
-
-  private readonly difficulty!: number;
-
-  public selectedDifficulty = this.difficulty ?? 4;
+  public selectedDifficulty = 4;
 
   public readonly solutionsCount!: number;
 
