@@ -31,11 +31,8 @@ def sudoku_generation():
 			except ValueError:
 				return jsonify({ 'error': 'Sudoku generation error' }), 404
 
-			matrixString = ''.join(str(ele) for sub in matrix.masked_grid for ele in sub)
-			matrixString = matrixString.join(str(int(ele != 0)) for sub in matrix.masked_grid for ele in sub)
 			return jsonify({
 				'matrix': matrix.masked_grid,
-				'matrixString': matrixString
 				}), 200
 
 	return jsonify({ 'error': 'Invalid input' }), 404

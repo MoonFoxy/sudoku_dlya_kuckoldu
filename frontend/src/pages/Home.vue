@@ -6,7 +6,7 @@
         <div class="row">
           <b-form-select v-model="selectedSize" :options="optionsSize" size="lg" class="col mt-3"></b-form-select>
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <b-button v-on:click="checkSolutionsCount()" block variant="light" class="col mt-3">{{
+          <b-button v-on:click="checkSolutionsCount(selectedSize, grid)" block variant="light" class="col mt-3">{{
             solutionsCount ? (solutionsCount > 100 ? 'Более 100 решений' : (0 >= solutionsCount ? 'Не имеет решений' : `${solutionsCount} решений`)) : 'Узнать кол-во решений'
             }}</b-button>
           &nbsp;&nbsp;&nbsp;&nbsp;
@@ -38,21 +38,37 @@ import { Vue, Component, Watch } from 'vue-property-decorator';
 import { mapState } from 'vuex';
 import Grid from '@/components/Grid.vue';
 
+interface Cell {
+  selected: boolean;
+  locked: boolean;
+  error: boolean;
+  value: number | '';
+}
+
 @Component({
   name: 'Home',
   components: {
     Grid,
   },
   computed: mapState([
+    'size',
+    'difficulty',
+    'grid',
     'solutionsCount',
   ]),
 })
 export default class Home extends Vue {
-  public selectedSize = 3;
+  private readonly size!: number;
 
-  public selectedDifficulty = 4;
+  public selectedSize = this.size ?? 3;
 
-  public solutionsCount!: number;
+  private readonly difficulty!: number;
+
+  public selectedDifficulty = this.difficulty ?? 4;
+
+  public readonly solutionsCount!: number;
+
+  public readonly grid!: Cell[][];
 
   public optionsSize: { value: number, text: string }[] = [
     { value: 2, text: '2 x 2' },
@@ -71,18 +87,24 @@ export default class Home extends Vue {
     { value: 6, text: 'GOOD_LUCK' },
   ];
 
-  checkSolutionsCount(): void {
-    this.$store.dispatch({ type: 'GET_SOLUTIONS_COUNT', size: this.$store.state.size, grid: this.$store.state.grid });
+  checkSolutionsCount(size: number, grid: Cell[][]): void {
+    this.$store.dispatch({
+      type: 'GET_SOLUTIONS_COUNT', size, grid, vm: this,
+    });
   }
 
   @Watch('selectedSize')
   @Watch('selectedDifficulty')
   onOptionChange(): void {
-    this.$store.dispatch({ type: 'INIT_SUDOKU', size: this.selectedSize, difficulty: this.selectedDifficulty });
+    this.$store.dispatch({
+      type: 'INIT_SUDOKU', size: this.selectedSize, difficulty: this.selectedDifficulty, vm: this,
+    });
   }
 
   created(): void {
-    this.$store.dispatch({ type: 'INIT_SUDOKU', size: 3, difficulty: 4 });
+    this.$store.dispatch({
+      type: 'INIT_SUDOKU', size: 3, difficulty: 4, vm: this,
+    });
   }
 }
 </script>

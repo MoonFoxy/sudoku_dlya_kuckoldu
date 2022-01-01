@@ -53,9 +53,9 @@ export default class Grid extends Vue {
   pickNumber(ev: { keyCode: number }): void {
     const value = parseInt(String.fromCharCode(ev.keyCode), 10);
     // If it was NaN, split out
-    if (!value) return;
+    if (Number.isNaN(value)) return;
     console.log(value);
-    this.$store.dispatch({ type: 'SET_CELL_VALUE', size: this.$store.state.size, value });
+    this.$store.dispatch({ type: 'SET_CELL_VALUE', value, vm: this });
   }
 
   mounted(): void {

@@ -5,8 +5,6 @@ import _ from 'lodash';
 
 Vue.use(Vuex);
 
-const URL = process.env.VUE_APP_API_URL ?? '';
-
 /**
  * DIFFICULTIES:
  *    CUSTOM: 0,
@@ -41,7 +39,7 @@ export default new Vuex.Store<State>({
     difficulty: 4,
     grid: Array(9).fill(Array(9).fill({
       selected: false,
-      locked: false,
+      locked: true,
       error: false,
       value: 0,
     } as Cell)),
@@ -55,7 +53,7 @@ export default new Vuex.Store<State>({
   mutations: {
     SET_INPUT(state, { value }: { value: number }) {
       let changedValue = value;
-      if (state.size ** 2 >= 10 && state.input) {
+      if (state.size ** 2 >= 10 && state.input !== null) {
         const formedValue: number = parseInt(`${state.input}${changedValue}`, 10);
         if (state.size ** 2 >= formedValue) {
           changedValue = formedValue;
@@ -67,10 +65,6 @@ export default new Vuex.Store<State>({
 
     NEW_GAME(state) {
       state.gameWon = false;
-    },
-
-    GAME_WON(state) {
-      state.gameWon = true;
     },
 
     CHECK_GAME(state) {
@@ -88,29 +82,36 @@ export default new Vuex.Store<State>({
       state.difficulty = difficulty;
     },
 
+    SET_GRID_STRING(
+      state,
+      { size, difficulty, matrix }: { size: State['size'], difficulty: State['difficulty'], matrix: number[][] },
+    ) {
+      state.gridString = `${size}${difficulty}|${_.map(matrix, (row) => `${row}`)}|${_.map(matrix, (row) => _.map(row, (el) => el !== 0))}`;
+    },
+
+    // PARSE_GRID_STRING(state) { },
+
     SET_GRID_SIZE(state, { size }: { size: State['size'] }) {
       const size2 = size ** 2;
       state.grid = Array(size2).fill(Array(size2).fill({
         selected: false,
-        locked: false,
+        locked: true,
         error: false,
         value: 0,
       } as Cell));
       state.size = size;
     },
 
-    SET_GRID_STRING(state, { gridString }: { gridString: string }) {
-      state.gridString = gridString;
-    },
-
-    SET_GRID(state, { matrix, gridString }: { matrix: number[][], gridString: string }) {
-      state.gridString = gridString;
+    SET_GRID(
+      state,
+      { matrix, custom }: { matrix: number[][], custom?: boolean },
+    ) {
       for (let y = 0; y < matrix.length; y += 1) {
         const row: Cell[] = [];
         for (let x = 0; x < matrix[y].length; x += 1) {
           const newCell = {
             selected: false,
-            locked: matrix[y][x] !== 0,
+            locked: matrix[y][x] !== 0 && !custom,
             error: false,
             value: matrix[y][x],
           };
@@ -126,10 +127,10 @@ export default new Vuex.Store<State>({
 
     SET_CELL_VALUE(state) {
       const value = state.input;
-      if (!value) return;
+      if (value === null) return;
 
       const size2 = state.size ** 2;
-      if (!state.selected || !(value >= 1 && value <= size2)) return;
+      if (!state.selected || !(value >= 0 && value <= size2)) return;
 
       state.grid[state.selected.y][state.selected.x].value = value;
 
@@ -145,8 +146,8 @@ export default new Vuex.Store<State>({
        */
       for (let i = 0; i < size2; i += 1) {
         // Check the lines
-        const row = _.filter(_.map(nonErrorGrid[i], (el) => el.value),
-          (val, j, arr) => _.includes(arr, val, j + 1));
+        const row = _.uniq(_.filter(_.map(nonErrorGrid[i], (el) => el.value),
+          (val, j, iteratee) => _.includes(iteratee, val, j + 1)));
         if (row.length !== 0) {
           for (let x = 0; x < size2; x += 1) {
             if (row.includes(nonErrorGrid[i][x].value) && nonErrorGrid[i][x].value !== 0) {
@@ -156,11 +157,11 @@ export default new Vuex.Store<State>({
         }
 
         // Check the column
-        const column = _.filter(_.map(_.map(nonErrorGrid, (el) => el[i]),
-          (el) => el.value), (val, j, arr) => _.includes(arr, val, j + 1));
+        const column = _.uniq(_.filter(_.map(_.map(nonErrorGrid, (el) => el[i]),
+          (el) => el.value), (val, j, iteratee) => _.includes(iteratee, val, j + 1)));
         if (column.length !== 0) {
           for (let y = 0; y < size2; y += 1) {
-            if (row.includes(nonErrorGrid[y][i].value) && nonErrorGrid[y][i].value !== 0) {
+            if (column.includes(nonErrorGrid[y][i].value) && nonErrorGrid[y][i].value !== 0) {
               nonErrorGrid[y][i].error = true;
             }
           }
@@ -178,7 +179,7 @@ export default new Vuex.Store<State>({
           }
         }
 
-        square = _.filter(square, (val, j, arr) => _.includes(arr, val, j + 1));
+        square = _.uniq(_.filter(square, (val, j, iteratee) => _.includes(iteratee, val, j + 1)));
         if (square.length !== 0) {
           for (let x = startX; x < startX + size; x += 1) {
             for (let y = startY; y < startY + size; y += 1) {
@@ -210,7 +211,40 @@ export default new Vuex.Store<State>({
   },
 
   actions: {
-    INIT_SUDOKU: async ({ commit }, { size, difficulty }: { size?: State['size'], difficulty?: State['difficulty'] }) => {
+    GAME_WON: async ({ state, dispatch }, { vm }: { vm: Vue }) => {
+      if (state.gameWon) {
+        await vm.$bvModal.msgBoxOk('Вы правильно решили судоку! Начать заного?', {
+          title: 'Отличная игра!',
+          okTitle: 'Новая игра',
+          size: 'sm',
+          buttonSize: 'lg',
+          okVariant: 'success',
+          headerClass: 'p-2 border-bottom-0 justify-content-center',
+          footerClass: 'p-2 border-top-0 justify-content-center',
+          centered: true,
+        })
+          .then(() => {
+            dispatch({
+              type: 'INIT_SUDOKU',
+              size: state.size,
+              difficulty: state.difficulty,
+              vm,
+            });
+          })
+          .catch((error) => {
+            if (error instanceof Error) {
+              vm.$bvToast.toast(`${error.name} | ${error.message}`, {
+                title: 'Error',
+                variant: 'danger',
+                solid: true,
+              });
+              console.error(error);
+            }
+          });
+      }
+    },
+
+    INIT_SUDOKU: async ({ commit, dispatch }, { size, difficulty, vm }: { size?: State['size'], difficulty?: State['difficulty'], vm: Vue }) => {
       commit({
         type: 'NEW_GAME',
       });
@@ -224,67 +258,100 @@ export default new Vuex.Store<State>({
       const gameSize = size ?? 3;
       commit({
         type: 'SET_GRID_SIZE',
-        size,
+        size: gameSize,
       });
 
-      let gridString: State['gridString'];
       if (gameDifficulty !== 0) {
-        let response: { data: { matrix: number[][], matrixString: string } } = {
-          data: {
-            matrix: [],
-            matrixString: '',
-          },
-        };
-        try {
-          response = await axios.post(`${URL}/sudoku/generate`, {
-            size: gameSize,
-            dif: gameDifficulty - 1,
+        await axios.post('sudoku/generate', {
+          size: gameSize,
+          dif: gameDifficulty - 1,
+        })
+          .then((res: { data: { matrix: number[][] } } = {
+            data: {
+              matrix: [],
+            },
+          }) => {
+            commit({
+              type: 'SET_GRID',
+              matrix: res.data.matrix,
+            });
+            commit({
+              type: 'SET_GRID_STRING',
+              size: gameSize,
+              difficulty: gameDifficulty,
+              matrix: res.data.matrix,
+            });
+          })
+          .catch((error) => {
+            if (error instanceof Error) {
+              vm.$bvToast.toast(`${error.name} | ${error.message}`, {
+                title: 'Error',
+                variant: 'danger',
+                solid: true,
+              });
+              console.error(error);
+              dispatch({
+                type: 'INIT_COSTOM_SUDOKU',
+                size: gameSize,
+              });
+            }
           });
-        } catch (error) {
-          console.error(error);
-        }
-
-        gridString = `${gameSize}${gameDifficulty}${response.data.matrixString}`;
-        commit({
-          type: 'SET_GRID',
-          matrix: response.data.matrix,
-          gridString,
-        });
       } else {
-        gridString = `${gameSize}${gameDifficulty}${0}`;
-        commit({
-          type: 'SET_GRID_STRING',
-          gridString,
+        dispatch({
+          type: 'INIT_COSTOM_SUDOKU',
+          size: gameSize,
         });
       }
-      console.log(gridString); // TODO: Save String in cache
+      // TODO: Save String in cache
     },
 
-    GET_SOLUTIONS_COUNT: async ({ commit }, { size, grid }: { size: State['size'], grid: Cell[][] }) => {
-      let response: { data: { sol: number } } = {
-        data: {
-          sol: 0,
-        },
-      };
+    INIT_COSTOM_SUDOKU: async ({ commit }, { size }: { size: State['size'] }) => {
+      commit({
+        type: 'SET_SUDOKU_DIFFICULTY',
+        difficulty: 0,
+      });
+
+      const matrix: number[][] = Array(size ** 2).fill(Array(size ** 2).fill(0));
+      commit({
+        type: 'SET_GRID',
+        matrix,
+        custom: true,
+      });
+      commit({
+        type: 'SET_GRID_STRING',
+        size,
+        difficulty: 0,
+        matrix,
+      });
+    },
+
+    GET_SOLUTIONS_COUNT: async ({ commit }, { size, grid, vm }: { size: State['size'], grid: Cell[][], vm: Vue }) => {
       let solutions = -1;
       const matrix = _.map(grid, (row) => _.map(row, (el) => el.value));
-      try {
-        response = await axios.post(`${URL}/sudoku/numsol`, {
-          size,
-          matrix,
+      await axios.post('sudoku/numsol', {
+        size,
+        matrix,
+      })
+        .then((res: { data: { sol: number } }) => {
+          solutions = res.data.sol;
+        })
+        .catch((error) => {
+          if (error instanceof Error) {
+            vm.$bvToast.toast(`${error.name} | ${error.message}`, {
+              title: 'Error',
+              variant: 'danger',
+              solid: true,
+            });
+            console.error(error);
+          }
         });
-        solutions = response.data.sol;
-      } catch (error) {
-        console.error(error);
-      }
-
       commit({
         type: 'SET_SOLUTIONS_COUNT',
         count: solutions,
       });
     },
 
-    SET_CELL_VALUE: async ({ commit }, { value }: { value: number }) => {
+    SET_CELL_VALUE: async ({ commit, dispatch }, { value, vm }: { value: number, vm: Vue }) => {
       commit({
         type: 'SET_INPUT',
         value,
@@ -295,14 +362,9 @@ export default new Vuex.Store<State>({
       commit({
         type: 'CHECK_GAME',
       });
-    },
-
-    // No need
-    SET_CELL_SELECTED: async ({ commit }, { x, y }: { x: number, y: number }) => {
-      commit({
-        type: 'SET_CELL_SELECTED',
-        x,
-        y,
+      dispatch({
+        type: 'GAME_WON',
+        vm,
       });
     },
   },

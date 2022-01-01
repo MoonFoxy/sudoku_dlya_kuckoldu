@@ -13,10 +13,16 @@ module.exports = {
     },
   },
   devServer: {
+
     proxy: {
       '^/sudoku': {
-        target: 'https://api.tsukiko.tech',
+        pathRewrite: {
+          '^/sudoku': '/sudoku',
+        },
+        secure: false,
+        logLevel: 'debug',
         changeOrigin: true,
+        target: 'https://api.tsukiko.tech',
       },
     },
     historyApiFallback: true,
