@@ -12,6 +12,7 @@
           <li>Любая сетка n×n содержит дублирующиеся цифры от 1 до n²</li>
         </ul>
       </div>
+      <br>
       <h2 class="display-4">Подсказки по игре</h2>
       <div class="container">
         <p>
