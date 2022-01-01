@@ -5,6 +5,8 @@ import _ from 'lodash';
 
 Vue.use(Vuex);
 
+const backendURL = process.env.VUE_APP_API_URL ?? '';
+
 /**
  * DIFFICULTIES:
  *    CUSTOM: 0,
@@ -262,7 +264,7 @@ export default new Vuex.Store<State>({
       });
 
       if (gameDifficulty !== 0) {
-        await axios.post('sudoku/generate', {
+        await axios.post(`${backendURL}/sudoku/generate`, {
           size: gameSize,
           dif: gameDifficulty - 1,
         })
@@ -328,7 +330,7 @@ export default new Vuex.Store<State>({
     GET_SOLUTIONS_COUNT: async ({ commit }, { size, grid, vm }: { size: State['size'], grid: Cell[][], vm: Vue }) => {
       let solutions = -1;
       const matrix = _.map(grid, (row) => _.map(row, (el) => el.value));
-      await axios.post('sudoku/numsol', {
+      await axios.post(`${backendURL}/sudoku/numsol`, {
         size,
         matrix,
       })
