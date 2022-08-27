@@ -36,8 +36,8 @@
     </div>
     <br>
     <div class="container">
-      <a href="https://tsukiko.tech" class="lead m-0 p-0">
-        tsukiko.tech
+      <a href="https://foxy.moe" class="lead m-0 p-0">
+        foxy.moe
       </a>
     </div>
   </div>
