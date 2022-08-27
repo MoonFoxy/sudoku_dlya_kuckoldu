@@ -33,6 +33,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: sudoku_dlya_kuckoldu
+          projectName: sudoku-dlya-kuckoldu
           directory: ./frontend/dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
